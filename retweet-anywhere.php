@@ -4,7 +4,7 @@ Plugin Name: Retweet Anywhere
 Plugin URI: http://kovshenin.com/wordpress/plugins/retweet-anywhere/
 Description: Retweet Anywhere for WordPress is a nice and easy way to allow your readers to instantly retweet your blog posts through their Twitter accounts
 Author: Konstantin Kovshenin
-Version: 0.1
+Version: 0.1.1
 Author URI: http://kovshenin.com/
 
 	License
