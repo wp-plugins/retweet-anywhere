@@ -13,13 +13,15 @@ jQuery(document).ready(function($){
 		var data = {
 			action: 'rta_getmessage',
 			post_id: $(this).attr("rel"),
-			format: $(this).attr("rev")
+			format: $(this).attr("rev"),
 		};
 		
 		// Set the Facebox settings according to settings from localize_script
 		$.facebox.settings.opacity = parseFloat(RetweetAnywhere.opacity);
 		$.facebox.settings.loadingImage = RetweetAnywhere.loadingImage;
-		$.facebox.settings.closeImage = RetweetAnywhere.closeImage;'/facebox/closelabel.gif',
+		$.facebox.settings.closeImage = RetweetAnywhere.closeImage;
+		
+		var title = $(this).attr("title");
 
 		// Initiate the facebox with an AJAX call
 		$.facebox(function() {
@@ -34,7 +36,7 @@ jQuery(document).ready(function($){
 						// Default settings, may be changed, perhaps from the Settings at a later stage
 						height: 40,
 						width: 540,
-						label: "Retweet This Post:",
+						label: title,
 						defaultContent: response.message, // The received message
 						onTweet: function() { $.facebox.close(); } // Close the facebox upon tweet
 					});

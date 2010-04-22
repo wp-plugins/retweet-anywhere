@@ -88,7 +88,7 @@ class RetweetAnywhereWidget extends WP_Widget {
 	
 	function form($instance)
 	{
-		$instance = wp_parse_args((array) $instance, array('title' => 'Retweet This Post', 'format' => '%s %l', 'width' => '200', 'height' => '70'));
+		$instance = wp_parse_args((array) $instance, array('title' => 'Retweet', 'format' => '%s %l', 'width' => '200', 'height' => '70'));
 		$title = $instance['title'];
 		$format = $instance['format'];
 		$width = $instance['width'];
@@ -116,6 +116,7 @@ class RetweetAnywhere {
 	{
 		// Default plugin settings
 		$this->default_settings = array(
+			"title" => "Retweet This Post",
 			"format" => "%s %l",
 			"shortener" => "none",
 			"placement" => "end",
@@ -205,6 +206,10 @@ class RetweetAnywhere {
 			<td><input type="text" class="regular-text" name="retweet-anywhere[api_key]" value="<?php echo $this->settings["api_key"]; ?>" /> <span class="description">The Twitter API key (<a href="http://kovshenin.com/wordpress/plugins/retweet-anywhere/#faq">How do I get one?</a>)</span></td>
 		</tr>
 		<tr valign="top">
+			<th scope="row">Popup Title</th>
+			<td><input type="text" class="regular-text" name="retweet-anywhere[title]" value="<?php echo $this->settings["title"]; ?>" /> <span class="description">Title goes above your tweet box, eg <code>Retweet This Post</code>.</span></td>
+		</tr>
+		<tr valign="top">
 			<th scope="row">Retweet Format</th>
 			<td><input type="text" class="regular-text" name="retweet-anywhere[format]" value="<?php echo $this->settings["format"]; ?>" /> <span class="description">The message format, eg: <code>%s %l (via @kovshenin)</code> described in the <a href="http://kovshenin.com/wordpress/plugins/retweet-anywhere/#faq">FAQ</a>.</span></td>
 		</tr>
@@ -285,7 +290,7 @@ class RetweetAnywhere {
 		</tr>
 		<tr valign="top">
 			<th scope="row">Custom HTML</th>
-			<td><input type="text" class="regular-text rta-style-html" name="retweet-anywhere[style_html]" value="<?php echo $this->settings["style_html"]; ?>" /> <span class="description">Do not include the <code>&lt;a&gt; &lt;/a&gt;</code> tags, they're done for you. Write only what's inside.</span></td>
+			<td><input type="text" class="regular-text rta-style-html" name="retweet-anywhere[style_html]" value="<?php echo htmlspecialchars($this->settings["style_html"]); ?>" /> <span class="description">Do not include the <code>&lt;a&gt; &lt;/a&gt;</code> tags, they're done for you. Write only what's inside.</span></td>
 		</tr>
 		<tr valign="top">
 			<th scope="row">Background Opacity</th>
@@ -340,10 +345,12 @@ class RetweetAnywhere {
 		extract(shortcode_atts(array(
 			"html" => false,
 			"format" => false,
+			"title" => false,
 		), $atts));
 
 		if (!$html) $html = $this->get_button();
 		if (!$format) $format = "";
+		if (!$title) $title = $this->settings["title"];
 		$message = '';
 		
 		// Let's see if we're inside the loop
@@ -351,12 +358,12 @@ class RetweetAnywhere {
 		if ($wp_query->in_the_loop || is_singular())
 		{
 			global $post;
-			return '<a href="http://twitter.com/?status=' . urlencode($post->post_title . " " . $post->guid) . '" class="retweet-anywhere" rev="' . $format . '" rel="' . $post->ID . '">' . $html . '</a>';
+			return '<a href="http://twitter.com/?status=' . urlencode($post->post_title . " " . $post->guid) . '" class="retweet-anywhere" title="' . $title . '" rev="' . $format . '" rel="' . $post->ID . '">' . $html . '</a>';
 		}
 		else
 		{
 			// Not inside the loop, link to the current page
-			return '<a href="http://twitter.com/?status=' . urlencode(get_bloginfo("title") . " " . get_bloginfo("home")) . '" class="retweet-anywhere" rev="' . $format . '" rel="0">' . $html . '</a>';
+			return '<a href="http://twitter.com/?status=' . urlencode(get_bloginfo("title") . " " . get_bloginfo("home")) . '" class="retweet-anywhere" title="' . $title . '" rev="' . $format . '" rel="0">' . $html . '</a>';
 		}
 	}
 	
@@ -389,7 +396,8 @@ class RetweetAnywhere {
 			"ajaxurl" => admin_url('admin-ajax.php'),
 			"loadingImage" => plugins_url("/images/facebox/loading.gif", __FILE__),
 			"closeImage" => plugins_url("/images/facebox/closelabel.gif", __FILE__),
-			"opacity" => $this->settings["opacity"]
+			"opacity" => $this->settings["opacity"],
+			"title" => $this->settings["title"]
 		));
 	}
 
@@ -462,16 +470,20 @@ class RetweetAnywhere {
 			include_once(ABSPATH . WPINC . '/class-http.php');
 		
 		// Encode the url
-		$url = urlencode($url);
+		$url_encoded = urlencode($url);
 		
 		// Get the bit.ly settings
-		$bitly_login = $this->settings["bitly_username"];
-		$bitly_key = $this->settings["bitly_api_key"];
+		$bitly_login = urlencode(trim($this->settings["bitly_username"]));
+		$bitly_key = urlencode(trim($this->settings["bitly_api_key"]));
 		
 		// Init $http and fire the request
 		$http = new WP_Http();		
-		$result = $http->request("http://api.bit.ly/v3/shorten?login={$bitly_login}&apiKey={$bitly_key}&uri={$url}&format=json");
+		$result = $http->request("http://api.bit.ly/v3/shorten?login={$bitly_login}&apiKey={$bitly_key}&uri={$url_encoded}&format=json");
 		
+		if (gettype($result) == "object")
+			if (get_class($result) == "WP_Error")
+				return $url;
+				
 		// JSON decode the result body and return the data->url
 		$result = json_decode($result["body"]);
 		$result = $result->data;
