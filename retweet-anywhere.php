@@ -108,6 +108,7 @@ class RetweetAnywhere {
 	// Settings
 	var $settings = array();
 	var $default_settings = array();
+	var $shorteners = array();
 	
 	// Admin notices
 	var $notices = array();
@@ -234,7 +235,7 @@ class RetweetAnywhere {
 					<select name="retweet-anywhere[shortener]" id="rta-shortener">
 						<option value="none" <?php echo @$selected["none"]; ?>>Don't shorten</option>
 						<option value="bitly" <?php echo @$selected["bitly"]; ?>>Bit.ly</option>
-					</select>
+						<?php							// Additional shorteners							$this->shorteners = apply_filters('retweet-anywhere-shorteners', $this->shorteners);							if ($this->shorteners)								foreach ($this->shorteners as $key => $shortener)									echo '<option value="' . $key . '" ' . @$selected[$key] . '>' . $shortener['name'] . '</option>';						?>					</select>
 				<?php
 					unset($selected);
 				?>
@@ -435,7 +436,7 @@ class RetweetAnywhere {
 			// Shorten the link if we need to
 			if ($this->settings["shortener"] == "bitly")
 				$url = $this->shorten($url, $post_id);
-
+			elseif ($this->settings['shortener'] != 'none')			{				$this->shorteners = apply_filters('retweet-anywhere-shorteners', $this->shorteners);				if (function_exists($this->shorteners[$this->settings['shortener']]['callback']))				{					$f = $this->shorteners[$this->settings['shortener']]['callback'];					$url = $f($url);				}			}
 			// Format the message
 			$replace = array(
 				"%s" => $title,

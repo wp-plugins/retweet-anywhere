@@ -4,7 +4,7 @@ Donate link: http://kovshenin.com/wordpress/plugins/retweet-anywhere/
 Tags: twitter, retweet, anywhere, javascript, tweet
 Requires at least: 2.9
 Tested up to: 3.0
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 
 Retweet Anywhere for WordPress is a nice and easy way to allow your readers to instantly retweet your blog posts through their Twitter accounts.
 
@@ -46,6 +46,10 @@ Please refer to [this FAQ](http://kovshenin.com/wordpress/plugins/retweet-anywhe
 4. Here's how the standard RT button looks
 
 == Change log ==
+
+= 0.1.2 =
+* Minor bug fixes
+* You can now use your own custom URL shortener
 
 = 0.1.1 =
 * Some minor bugfixes with bit.ly
