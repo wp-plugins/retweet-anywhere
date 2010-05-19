@@ -47,6 +47,10 @@ Please refer to [this FAQ](http://kovshenin.com/wordpress/plugins/retweet-anywhe
 
 == Change log ==
 
+= 0.1.2 =
+* Minor bug fixes
+* You can now use your own custom URL shortener
+
 = 0.1.1 =
 * Some minor bugfixes with bit.ly
 * Settings screen bugs fixed
