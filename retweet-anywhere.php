@@ -4,7 +4,7 @@ Plugin Name: Retweet Anywhere
 Plugin URI: http://kovshenin.com/wordpress/plugins/retweet-anywhere/
 Description: Retweet Anywhere for WordPress is a nice and easy way to allow your readers to instantly retweet your blog posts through their Twitter accounts
 Author: Konstantin Kovshenin
-Version: 0.1.2
+Version: 0.1.3
 Author URI: http://kovshenin.com/
 
 	License
@@ -119,7 +119,7 @@ class RetweetAnywhere {
 		$this->default_settings = array(
 			"title" => "Retweet This Post",
 			"format" => "%s %l",
-			"shortener" => "none",
+			"shortener" => "native",
 			"placement" => "end",
 			"style" => "default",
 			"opacity" => "0.5",
@@ -233,6 +233,7 @@ class RetweetAnywhere {
 					$selected[$this->settings["shortener"]] = 'selected="selected"';
 				?>
 					<select name="retweet-anywhere[shortener]" id="rta-shortener">
+						<option value="native" <?php echo @$selected["native"]; ?>>WordPress Native</option>
 						<option value="none" <?php echo @$selected["none"]; ?>>Don't shorten</option>
 						<option value="bitly" <?php echo @$selected["bitly"]; ?>>Bit.ly</option>
 						<?php							
@@ -443,6 +444,8 @@ class RetweetAnywhere {
 			// Shorten the link if we need to
 			if ($this->settings["shortener"] == "bitly")
 				$url = $this->shorten($url, $post_id);
+			elseif ($this->settings["shortener"] == "native")
+				$url = $this->shorten_native($url, $post_id);
 			elseif ($this->settings['shortener'] != 'none')
 			{
 				$this->shorteners = apply_filters('retweet-anywhere-shorteners', $this->shorteners);
@@ -469,6 +472,17 @@ class RetweetAnywhere {
 		// JSON encode, print and die
 		echo json_encode($response);
 		die();
+	}
+	
+	function shorten_native($url, $post_id = 0)
+	{
+		global $post;
+		$post = get_post($post_id);
+		$shortlink = wp_get_shortlink();
+		if ($shortlink)
+			return $shortlink;
+		else
+			return $url;
 	}
 	
 	// Shorten the URL via bit.ly
